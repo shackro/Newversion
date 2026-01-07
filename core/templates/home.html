@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="mx-2 mb-16 lg:mb-4 flex-col items-center justify-content-center overflow-x-hidden">
+    
+    <!-- Welcome Message -->
+    <div class="text-center mb-4 mt-6">
+        <h1 class="text-2xl font-bold text-white dark:text-white">
+            Welcome back, {{ user.username }}!
+        </h1>
+    </div>
+
+    <!-- Wallet Balance and Equity -->
+    <div class="justify-around items-center py-3 border border-indigo-400 rounded-xl mb-2">
+        <div class="flex justify-around items-center py-3 rounded-xl">
+            <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-orange-500 to-amber-900">
+                Cash Balance: <br />
+                <span class="text-xl font-bold">
+                    <span class="text-xl font-bold">
+                        {{ currency_symbol }} {{ wallet.available |default:0|floatformat:2 }}
+                    </span>
+                </span>
+            </div>
+            <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600">
+                Total Equity:<br />
+                <span class="text-xl font-bold">
+                        {{ currency_symbol }} {{ wallet.total|default:0|floatformat:2 }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Investment Summary -->
+        <div class="flex justify-around items-center rounded-xl mb-4">
+            <div class="flex-col text-center p-4 w-2/5 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600">
+                Total Invested: <br />
+                <span class="text-lg font-semibold">
+                    <span class="text-xl font-bold">
+                        {{ currency_symbol }} {{ wallet.locked|default:0|floatformat:2 }}
+                    </span>
+                </span>
+            </div>
+            <div id="pnl" class="flex-col text-center p-3 w-2/5 rounded-xl bg-gradient-to-br 
+                {% if total_profit_loss >= 0 %}from-green-500 to-emerald-600{% else %}from-red-500 to-rose-600{% endif %}">
+                Total P&L: <br />
+                <span class="text-lg font-semibold">
+                    {% if total_profit_loss >= 0 %}+{% endif %}
+                    <span class="text-xl font-bold">
+                        {{ currency_symbol }} {{ total_profit_loss|default:0|floatformat:2 }}
+                    </span>
+                </span>
+                {% if total_invested > 0 %}
+                <div class="text-sm">
+                    ({% if total_profit_loss >= 0 %}+{% endif %}{% widthratio total_profit_loss total_invested 100 %}%)
+                </div>
+                {% endif %}
+            </div> 
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex justify-around items-center py-3 mb-6 space-x-3"> 
+        <a href="{% url 'deposit' %}" 
+           class="flex flex-col items-center justify-center p-3 w-1/4 rounded-xl bg-gradient-to-br from-yellow-500 to-teal-600 hover:-translate-y-1 transition transform duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+            </svg>
+            <p class="mt-2 text-center text-sm">Deposit</p>
+        </a>
+
+        <a href="{% url 'withdraw' %}" 
+           class="flex flex-col items-center justify-center p-3 w-1/4 rounded-xl bg-gradient-to-br from-yellow-500 to-teal-600 hover:-translate-y-1 transition transform duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path fillRule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0z"/>
+                <path fillRule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708z"/>
+            </svg>
+            <p class="mt-2 text-center text-sm">Withdraw</p>
+        </a>
+
+        <a href="{% url 'bonus' %}" 
+           class="flex flex-col items-center justify-center p-3 w-1/4 rounded-xl bg-gradient-to-br from-yellow-500 to-teal-600 hover:-translate-y-1 transition transform duration-200">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M2.5.5A.5.5 0 0 1 3 0h10a.5.5 0 0 1 .5.5c0 .538-.012 1.05-.034 1.536a3 3 0 1 1-1.133 5.89c-.79 1.865-1.878 2.777-2.833 3.011v2.173l1.425.356c.194.048.377.135.537.255L13.3 15.1a.5.5 0 0 1-.3.9H3a.5.5 0 0 1-.3-.9l1.838-1.379c.16-.12.343-.207.537-.255L6.5 13.11v-2.173c-.955-.234-2.043-1.146-2.833-3.012a3 3 0 1 1-1.132-5.89A33 33 0 0 1 2.5.5m.099 2.54a2 2 0 0 0 .72 3.935c-.333-1.05-.588-2.346-.72-3.935m10.083 3.935a2 2 0 0 0 .72-3.935c-.133 1.59-.388 2.885-.72 3.935M8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2"/>
+            </svg>
+            <p class="mt-2 text-center text-sm">Bonus</p>
+        </a>
+    </div>
+
+    <div class="py-4">
+    {% include 'partials/number_carousel.html'%}
+    </div>
+
+    
+    <!-- My Investments -->
+    <div class="mt-8">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-white">📈 Featured Assets</h2>
+            <a href="{% url 'assets' %}" class="text-sm text-blue-400 hover:text-blue-300">
+                View All Assets →
+            </a>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+            {% for asset in market_assets %}
+                {% include 'invest_widget.html' with asset=asset currency_symbol=currency_symbol %}
+            {% empty %}
+            <div class="col-span-full text-center py-8">
+                <p class="text-gray-400">No assets available at the moment.</p>
+                <a href="{% url 'assets' %}" class="mt-2 inline-block text-blue-400 hover:text-blue-300">
+                    Browse all assets
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+
+                <!-- Recent Activity -->
+        <div class="mt-6 mb-4 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 text-white">
+            <h3 class="text-xl font-bold mb-4 text-center">Recent Activity</h3>
+                <div class="space-y-2">
+                    {% for activity in recent_transactions %}
+                    <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                        <div class="flex-1">
+                            <span class="font-medium capitalize">{{ activity.get_transaction_type_display }}</span>
+                            <p class="text-sm text-gray-300">{{ activity.description }}</p>
+                        </div>
+                <div class="flex-1 text-right">
+                    <span class="{% if activity.original_amount > 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                        {% if activity.original_amount > 0 %}+{% endif %}
+                        {{ activity.display_currency_symbol }}{{ activity.display_amount|floatformat:2 }}
+                    </span>
+                    <p class="text-xs text-gray-400">
+                        {{ activity.created_at|date:"M d, Y" }}
+                    </p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-4 text-gray-400">
+                <p>No recent activity</p>
+                <p class="text-sm">Your activities will appear here</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    </div>
+</div>
+{% endblock %}

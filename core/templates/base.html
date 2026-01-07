@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en" class="{% if theme == 'dark' %}dark{% endif %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PesaPrime - {% block title %}Personal Finance Dashboard{% endblock %}</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Custom Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    animation: {
+                        'spin-slow': 'spin 3s linear infinite',
+                        'scroll': 'scroll 40s linear infinite',
+                    },
+                    keyframes: {
+                        scroll: {
+                            '0%': { transform: 'translateX(0)' },
+                            '100%': { transform: 'translateX(calc(-250px * 4))' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <style>
+        * {
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            box-sizing: border-box;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            max-width: 100vw;
+        }
+        .dark body { color-scheme: dark; background-color: #111827; color: white; }
+        .animate-spin-slow { animation: spin 3s linear infinite; }
+        @keyframes scroll { 0% { transform: translateX(0); } 100% { transform: translateX(calc(-250px * 4)); } }
+        .animate-scroll { animation: scroll 40s linear infinite; }
+        .animate-scroll:hover { animation-play-state: paused; }
+        .nav-btn.active { background-color: #7c2d12; transform: scale(1.05); border-width: 2px; border-color: white; color: #fbbf24; }
+        .message-alert { transition: opacity 0.3s ease, transform 0.3s ease; }
+        .message-alert.opacity-0 { opacity: 0; transform: translateY(-5px); }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="bg-gray-900 text-white overflow-x-hidden dark:bg-gray-900 dark:text-white">
+
+    <!-- Loading Screen -->
+    <div id="page-loader" class="fixed inset-0 z-[9999] flex items-center justify-center bg-gray-600 dark:bg-gray-900">
+        <div class="relative text-center">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" fill="currentColor" class="fill-green-600" viewBox="0 0 16 16">
+                <path d="M5.5 9.511c.076.954.83 1.697 2.182 1.785V12h.6v-.709c1.4-.098 2.218-.846 2.218-1.932 0-.987-.626-1.496-1.745-1.76l-.473-.112V5.57c.6.068.982.396 1.074.85h1.052c-.076-.919-.864-1.638-2.126-1.716V4h-.6v.719c-1.195.117-2.01.836-2.01 1.853 0 .9.606 1.472 1.613 1.707l.397.098v2.034c-.615-.093-1.022-.43-1.114-.9zm2.177-2.166c-.59-.137-.91-.416-.91-.836 0-.47.345-.822.915-.925v1.76h-.005zm.692 1.193c.717.166 1.048.435 1.048.91 0 .542-.412.914-1.135.982V8.518z"/>
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                <path d="M8 13.5a5.5 5.5 0 1 1 0-11 5.5 5.5 0 0 1 0 11m0 .5A6 6 0 1 0 8 2a6 6 0 0 0 0 12"/>
+            </svg>
+            <div class="absolute -top-3 -left-3 h-20 w-20 rounded-full border-8 border-dotted border-green-600 animate-spin-slow dark:border-green-400"></div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+    <div class="fixed top-6 right-6 z-50 space-y-3 w-full max-w-sm">
+        {% for message in messages %}
+        <div class="flex items-start gap-3 rounded-lg p-4 shadow-lg border
+            {% if message.tags == 'success' %}bg-green-50 border-green-400 text-green-800
+            {% elif message.tags == 'error' %}bg-red-50 border-red-400 text-red-800
+            {% elif message.tags == 'warning' %}bg-yellow-50 border-yellow-400 text-yellow-800
+            {% else %}bg-blue-50 border-blue-400 text-blue-800{% endif %} message-alert">
+            <svg class="w-5 h-5 mt-0.5 flex-shrink-0" fill="currentColor">
+                <use xlink:href="
+                    {% if message.tags == 'success' %}#success-icon
+                    {% elif message.tags == 'error' %}#error-icon
+                    {% elif message.tags == 'warning' %}#warning-icon
+                    {% else %}#info-icon{% endif %}"/>
+            </svg>
+            <div class="flex-1 text-sm font-medium">{{ message }}</div>
+            <button type="button" class="ml-2 text-gray-500 hover:text-gray-900" onclick="closeMessage(this)">✕</button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Navbar -->
+    {% if user.is_authenticated %}
+        {% include 'partials/navbar.html' %}
+        {% include 'partials/mobile_nav.html' %}
+    {% endif %}
+
+    <!-- Main Content -->
+    <main class="min-h-screen {% if user.is_authenticated %}pt-20{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% if user.is_authenticated %}
+        {% include 'partials/footer.html' %}
+    {% endif %}
+
+    <!-- Scripts -->
+    <script>
+        // Loader removal
+        window.addEventListener("load", function () {
+            const loader = document.getElementById("page-loader");
+            if (loader) { loader.style.opacity="0"; loader.style.pointerEvents="none"; setTimeout(() => loader.remove(),300); }
+        });
+
+        // Close message alerts
+        function closeMessage(btn) {
+            const alert = btn.closest(".message-alert");
+            if (!alert) return;
+            alert.classList.add("opacity-0");
+            setTimeout(() => alert.remove(), 300);
+        }
+        setTimeout(() => {
+            document.querySelectorAll(".message-alert").forEach(alert => {
+                alert.classList.add("opacity-0");
+                setTimeout(() => alert.remove(), 300);
+            });
+        }, 5000);
+
+        // Theme toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const themeToggle = document.getElementById('theme-toggle');
+            if (themeToggle) {
+                themeToggle.addEventListener('click', function() {
+                    const isDark = document.documentElement.classList.contains('dark');
+                    document.documentElement.classList.toggle('dark');
+                    document.cookie = `theme=${isDark ? 'light' : 'dark'}; path=/; max-age=31536000`;
+                    if ('{{ user.is_authenticated }}' === 'True') {
+                        fetch('/accounts/update-theme/', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json','X-CSRFToken': '{{ csrf_token }}'},
+                            body: JSON.stringify({ theme: isDark ? 'light' : 'dark' })
+                        });
+                    }
+                });
+            }
+
+            // Currency selector
+            const currencySelect = document.getElementById('currency-select');
+            if (currencySelect) {
+                currencySelect.addEventListener('change', function() {
+                    fetch('/accounts/update-currency/', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json','X-CSRFToken': '{{ csrf_token }}'},
+                        body: JSON.stringify({ currency: this.value })
+                    }).then(()=>location.reload());
+                });
+            }
+        });
+
+        // Format currency
+        function formatCurrency(amount, currency = '{{ current_currency.code|default:"KES" }}') {
+            const currencies = {
+                'KES': { symbol: 'KSh ', locale: 'en-KE' },
+                'USD': { symbol: '$', locale: 'en-US' },
+                'EUR': { symbol: '€', locale: 'de-DE' },
+                'GBP': { symbol: '£', locale: 'en-GB' }
+            };
+            const config = currencies[currency] || currencies['KES'];
+            return config.symbol + parseFloat(amount).toLocaleString(config.locale, { minimumFractionDigits:2, maximumFractionDigits:2 });
+        }
+
+        // PNL updates every 5s
+        {% comment %} function updatePNL() {
+            fetch("{% url 'pnl_api' %}")
+                .then(res=>res.json())
+                .then(data=>{
+                    document.getElementById("total-invested").innerText = data.total_invested.toFixed(2);
+                    document.getElementById("current-value").innerText = data.current_value.toFixed(2);
+                    const pnlEl = document.getElementById("pnl");
+                    pnlEl.innerText = data.pnl.toFixed(2);
+                    pnlEl.classList.remove("text-green-500","text-red-500");
+                    pnlEl.classList.add(data.pnl>=0?"text-green-500":"text-red-500");
+                }).catch(err=>console.error("PNL update failed:",err));
+        }
+        updatePNL();
+        setInterval(updatePNL,5000); {% endcomment %}
+
+        // Extended investment stats
+        {% comment %} function updatePNLw() {
+            fetch("{% url 'investment_stats_api' %}")
+                .then(res=>res.json())
+                .then(data=>{
+                    document.getElementById("total-profit").innerText = "+" + data.total_profit;
+                    document.getElementById("total-loss").innerText = data.total_loss;
+                    const netPL = document.getElementById("net-pl");
+                    const netPLPercent = document.getElementById("net-pl-percent");
+                    netPL.innerHTML = `Net P/L: ${data.net_pl>=0?'+':''}${data.net_pl} <span class="text-sm ml-2">(${data.net_pl_percentage}%)</span>`;
+                    netPL.className = "text-lg font-bold " + (data.net_pl>=0?"text-green-300":"text-red-300");
+                    const progressBar = document.getElementById("pl-progress-bar");
+                    progressBar.style.width = data.progress_width + "%";
+                    progressBar.className = "h-2 rounded-full transition-all duration-500 " +
+                        (data.net_pl>=0?"bg-gradient-to-r from-green-400 to-yellow-400":"bg-gradient-to-r from-red-400 to-orange-400");
+                });
+        }
+        updatePNLw();
+        setInterval(updatePNLw,5000); {% endcomment %}
+
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

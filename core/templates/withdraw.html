@@ -1,0 +1,268 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Withdraw - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-red-900 p-4">
+    <div class="max-w-md mx-auto">
+
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'home' %}"
+               class="p-2 rounded-full bg-gray-800 shadow-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="text-white">
+                    <path fill-rule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6z"/>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-white">Withdraw Funds</h1>
+        </div>
+
+        <!-- Current Balance Card -->
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <div class="text-center">
+                <p class="text-gray-300 mb-2">Available Balance</p>
+                <p class="text-3xl font-bold text-green-600">
+                    {{ currency_symbol }}{{ wallet_balance|floatformat:2 }}
+                </p>
+                <p class="text-sm text-gray-400 mt-2">
+                    Maximum withdrawal: {{ currency_symbol }}{{ wallet_balance|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Withdrawal Card -->
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-white mb-4">Withdrawal Amount</h2>
+
+            <!-- Display Messages -->
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="p-3 rounded-lg {% if message.tags == 'success' %}bg-green-900/50 text-green-300{% else %}bg-red-900/50 text-red-300{% endif %}">
+                    {{ message }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Withdrawal Form -->
+            <form method="post" class="space-y-6" id="withdrawalForm">
+                {% csrf_token %}
+                
+                <!-- Amount Field -->
+                <div>
+                    <label class="block text-gray-300 mb-2" for="id_amount">
+                        {{ form.amount.label }}
+                    </label>
+                    {{ form.amount }}
+                    {% if form.amount.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.amount.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Payment Method -->
+                <div>
+                    <label class="block text-gray-300 mb-2" for="id_payment_method">
+                        Payment Method
+                    </label>
+                    {{ form.payment_method }}
+                </div>
+
+                <!-- Dynamic Fields (shown based on payment method) -->
+                <div id="mpesa_fields" class="hidden">
+                    <label class="block text-gray-300 mb-2" for="id_phone_number">
+                        M-Pesa Phone Number
+                    </label>
+                    {{ form.phone_number }}
+                    {% if form.phone_number.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.phone_number.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div id="bank_fields" class="hidden">
+                    <label class="block text-gray-300 mb-2" for="id_bank_account">
+                        Bank Account Details
+                    </label>
+                    {{ form.bank_account }}
+                    {% if form.bank_account.errors %}
+                    <p class="text-red-400 text-sm mt-1">{{ form.bank_account.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Quick Select -->
+                <div>
+                    <p class="text-gray-300 mb-3">Quick Select</p>
+                    <div class="grid grid-cols-3 gap-2">
+                        {% for amount in quick_amounts %}
+                        <button type="button"
+                                class="quick-amount py-2 px-3 bg-gray-700 hover:bg-red-600 text-white rounded-lg transition duration-200">
+                            {{ currency_symbol }}{{ amount|floatformat:2 }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Withdrawal Details -->
+                <div class="mb-6 p-4 bg-gray-700/50 rounded-xl">
+                    <h4 class="font-semibold text-white mb-2">Withdrawal Details</h4>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-300">Amount:</span>
+                            <span class="amount-display font-semibold text-white">{{ currency_symbol }}0.00</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-300">Fee:</span>
+                            <span class="text-green-600">Free</span>
+                        </div>
+                        <div class="flex justify-between border-t border-gray-600 pt-2">
+                            <span class="text-white font-semibold">Total to receive:</span>
+                            <span class="amount-display font-semibold text-white">{{ currency_symbol }}0.00</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit"
+                        class="w-full py-4 bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white rounded-xl font-semibold text-lg transition duration-200">
+                    Withdraw Now
+                </button>
+
+                <div class="mt-4 text-center text-sm text-gray-400">
+                    Withdrawals are processed within 24 hours
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Withdrawals -->
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">Recent Withdrawals</h3>
+            <div class="space-y-3">
+                {% for withdrawal in withdrawals %}
+                <div class="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg">
+                    <div>
+                        <p class="font-medium text-white">
+                            {{ withdrawal.get_payment_method_display }}
+                        </p>
+                        <p class="text-sm text-gray-400">
+                            {{ withdrawal.created_at|date:"M d, Y H:i" }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-red-400 font-semibold">
+                            - {{ currency_symbol }}{{ withdrawal.amount|floatformat:2 }}
+                        </p>
+                        <span class="text-xs px-2 py-1 rounded-full 
+                            {% if withdrawal.status == 'completed' %}bg-green-900/50 text-green-300
+                            {% elif withdrawal.status == 'pending' %}bg-yellow-900/50 text-yellow-300
+                            {% else %}bg-gray-700 text-gray-300{% endif %}">
+                            {{ withdrawal.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-gray-400">
+                    <p>No withdrawal history</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const amountInput = document.getElementById('id_amount');
+    const paymentMethodSelect = document.getElementById('id_payment_method');
+    const mpesaFields = document.getElementById('mpesa_fields');
+    const bankFields = document.getElementById('bank_fields');
+    const quickAmountButtons = document.querySelectorAll('.quick-amount');
+    const amountDisplayElements = document.querySelectorAll('.amount-display');
+    
+    // Show/hide dynamic fields based on payment method
+    function togglePaymentFields() {
+        const method = paymentMethodSelect.value;
+        
+        // Hide all fields first
+        mpesaFields.classList.add('hidden');
+        bankFields.classList.add('hidden');
+        
+        // Show relevant fields
+        if (method === 'mpesa') {
+            mpesaFields.classList.remove('hidden');
+        } else if (method === 'bank') {
+            bankFields.classList.remove('hidden');
+        }
+    }
+    
+    // Quick amount buttons
+    quickAmountButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const amountText = this.textContent;
+            const amount = amountText.replace(/[^\d.]/g, '');
+            amountInput.value = amount;
+            updateAmountDisplay();
+        });
+    });
+    
+    // Update amount display when input changes
+    function updateAmountDisplay() {
+        const amount = amountInput.value || '0';
+        const formattedAmount = parseFloat(amount).toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        amountDisplayElements.forEach(el => {
+            el.textContent = "{{ currency_symbol }}" + formattedAmount;
+        });
+    }
+    
+    // Initialize
+    togglePaymentFields();
+    updateAmountDisplay();
+    
+    // Event listeners
+    paymentMethodSelect.addEventListener('change', togglePaymentFields);
+    amountInput.addEventListener('input', updateAmountDisplay);
+    
+    // Form validation
+    document.getElementById('withdrawalForm').addEventListener('submit', function(e) {
+        const amount = parseFloat(amountInput.value) || 0;
+        const maxAmount = parseFloat("{{ wallet_balance }}");
+        
+        if (amount > maxAmount) {
+            e.preventDefault();
+            alert(`Amount exceeds available balance of {{ currency_symbol }}${maxAmount.toFixed(2)}`);
+            return false;
+        }
+        
+        if (amount < {{ form.amount.min_value }}) {
+            e.preventDefault();
+            alert(`Minimum withdrawal is {{ currency_symbol }}{{ form.amount.min_value|floatformat:2 }}`);
+            return false;
+        }
+        
+        // Validate payment method specific fields
+        const method = paymentMethodSelect.value;
+        if (method === 'mpesa') {
+            const phoneInput = document.getElementById('id_phone_number');
+            if (!phoneInput.value.trim()) {
+                e.preventDefault();
+                alert('Please enter your M-Pesa phone number');
+                phoneInput.focus();
+                return false;
+            }
+        } else if (method === 'bank') {
+            const bankInput = document.getElementById('id_bank_account');
+            if (!bankInput.value.trim()) {
+                e.preventDefault();
+                alert('Please enter your bank account details');
+                bankInput.focus();
+                return false;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

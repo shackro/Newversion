@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Profile - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="mx-3 flex-col items-center justify-content-center space-y-4 overflow-x-hidden min-h-screen mb-20 lg:mb-2 mt-6">
+    <!-- Profile Header -->
+    <div class="flex flex-col lg:flex-row items-center w-full py-3 bg-gradient-to-br from-lime-500 to-emerald-900 rounded-xl justify-between"> 
+        <!-- User Info -->
+        <div class="flex items-center space-x-4 text-center p-4 lg:w-2/3 rounded-xl justify-left">
+            <div class="flex flex-col text-center p-6 rounded-xl bg-gradient-to-br from-teal-500 to-amber-900 text-2xl lg:text-3xl font-bold">
+                {{ user.get_initials|default:"US" }}
+            </div>
+            <div class="flex flex-col text-start p-2 rounded-xl bg-gradient-to-br from-teal-500 to-amber-900">      
+                <p class="text-lg lg:text-3xl font-semibold">{{ user.get_full_name|default:user.username }}</p>
+                <p class="text-md lg:text-medium text-white">{{ user.email }}</p>
+                <p class="text-xs lg:text-lg text-white mt-1">{{ user.phone_number|default:"No phone number" }}</p>
+                <p class="text-xs lg:text-md text-gray-70 mt-1">
+                    Member since: {{ user.date_joined|date:"F j, Y" }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-col lg:flex-row space-x-2 space-y-2 lg:space-y-0 rounded-xl lg:w-1/3 justify-end p-4">
+            <a href="{% url 'deposit' %}"
+                class="flex items-center justify-center text-center p-3 font-medium text-white bg-green-700 hover:bg-green-600 active:bg-green-500 rounded-lg shadow-lg transition-all duration-300 hover:scale-105">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="mr-2" viewBox="0 0 16 16">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14m0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16"/>
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4"/>
+                </svg>
+                <span>Deposit</span>
+            </a>
+            <a href="{% url 'logout' %}"
+                class="flex items-center justify-center text-center p-3 font-medium text-white bg-red-700 hover:bg-red-600 active:bg-red-500 rounded-lg shadow-lg transition-all duration-300 hover:scale-105">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a1 1 0 01-1 1H6a2 2 0 01-2-2V7a2 2 0 012-2h6a1 1 0 011 1v1m0 4V4a1 1 0 00-1-1H6a2 2 0 00-2 2v12a2 2 0 002 2h6a1 1 0 001-1v-1"/>
+                </svg>
+                <span>Log Out</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex flex-col lg:flex-row justify-between w-full py-3 bg-gray-800 rounded-xl min-h-96 text-white"> 
+        <!-- Left Column - Profile Form -->
+        <div class="flex flex-col w-full lg:w-3/4 p-4 space-y-6">
+            <!-- Profile Update Form -->
+            <div class="bg-gray-900 text-white rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6 text-center">Update Profile</h3>
+                <form method="post" enctype="multipart/form-data" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- User Form -->
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-lg border-b pb-2">Account Information</h4>
+                            {{ user_form|crispy }}
+                        </div>
+                        
+                        <!-- Profile Form -->
+                        <div class="space-y-4">
+                            <h4 class="font-semibold text-lg border-b pb-2">Personal Information</h4>
+                            {{ profile_form|crispy }}
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Button -->
+                    <div class="pt-4">
+                        <button type="submit" 
+                                class="w-full py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-semibold rounded-lg transition duration-200">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Account Security -->
+            <div class="bg-gray-700 rounded-xl p-6">
+                <h3 class="text-xl font-bold mb-6 text-center">Account Security</h3>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                        <div>
+                            <h4 class="font-semibold">Two-Factor Authentication</h4>
+                            <p class="text-sm text-gray-400">Add an extra layer of security to your account</p>
+                        </div>
+                        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg transition duration-200">
+                            Enable
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                        <div>
+                            <h4 class="font-semibold">Login History</h4>
+                            <p class="text-sm text-gray-400">View recent login activity</p>
+                        </div>
+                        <button class="px-4 py-2 bg-gray-600 hover:bg-gray-700 rounded-lg transition duration-200">
+                            View
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center justify-between p-4 bg-gray-800 rounded-lg">
+                        <div>
+                            <h4 class="font-semibold">Change Password</h4>
+                            <p class="text-sm text-gray-400">Update your password regularly</p>
+                        </div>
+                        <a href="{% url 'change_password' %}" 
+                           class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 rounded-lg transition duration-200">
+                            Change
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column - Stats & Quick Links -->
+        <div class="flex flex-col w-full lg:w-1/4 p-4 lg:border-l-2 lg:border-l-orange-300 space-y-6">
+            <!-- Investment Stats -->
+            <div class="bg-gray-700 rounded-xl p-4">
+                <h4 class="font-bold text-lg mb-4 text-center">Investment Stats</h4>
+                <div class="space-y-3">
+                    {% with wallet=user.wallet %}
+                    <div class="flex justify-between items-center p-2 bg-gray-800 rounded">
+                        <span class="text-gray-400">Total Invested:</span>
+                        <span class="font-semibold">
+                            {{ currency_symbol }}{{ total_invested|default:0|floatformat:2 }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-gray-800 rounded">
+                        <span class="text-gray-400">Current Value:</span>
+                        <span id="pnl" class="font-semibold">
+                            {{ currency_symbol }}{{ wallet_equity|default:0|floatformat:2 }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center p-2 bg-gray-800 rounded">
+                        <span class="text-gray-400">Total P&L:</span>
+                        <span class="font-semibold {% if total_profit_loss >= 0 %}text-green-400{% else %}text-red-400{% endif %}">
+                            {% if total_profit_loss >= 0 %}+{% endif %}
+                            {{ currency_symbol }}{{ total_profit_loss|default:0|floatformat:2 }}
+                        </span>
+                    </div>
+                    {% endwith %}
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="bg-gray-700 rounded-xl p-4">
+                <h4 class="font-bold text-lg mb-4 text-center">Quick Links</h4>
+                <div class="space-y-2">
+                    <a href="{% url 'assets' %}" 
+                       class="flex items-center p-3 bg-gray-800 hover:bg-gray-600 rounded-lg transition duration-200">
+                        <svg class="w-5 h-5 mr-3 text-emerald-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.305 2.305 0 01-.567-.267C8.07 8.34 8 8.114 8 8c0-.114.07-.34.433-.582zM11 12.849v-1.698c.22.071.412.164.567.267.364.243.433.468.433.582 0 .114-.07.34-.433.582a2.305 2.305 0 01-.567.267z"/>
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.092a4.535 4.535 0 00-1.676.662C6.602 6.234 6 7.009 6 8c0 .99.602 1.765 1.324 2.246.48.32 1.054.545 1.676.662v1.941c-.391-.127-.68-.317-.843-.504a1 1 0 10-1.51 1.31c.562.649 1.413 1.076 2.353 1.253V15a1 1 0 102 0v-.092a4.535 4.535 0 001.676-.662C13.398 13.766 14 12.991 14 12c0-.99-.602-1.765-1.324-2.246A4.535 4.535 0 0011 9.092V7.151c.391.127.68.317.843.504a1 1 0 101.511-1.31c-.563-.649-1.413-1.076-2.354-1.253V5z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Invest Now</span>
+                    </a>
+                    
+                    <a href="{% url 'bonus' %}" 
+                       class="flex items-center p-3 bg-gray-800 hover:bg-gray-600 rounded-lg transition duration-200">
+                        <svg class="w-5 h-5 mr-3 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                        <span>Claim Bonus</span>
+                    </a>
+                    
+                    <a href="{% url 'contact' %}" 
+                       class="flex items-center p-3 bg-gray-800 hover:bg-gray-600 rounded-lg transition duration-200">
+                        <svg class="w-5 h-5 mr-3 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M2.94 6.412A2 2 0 002 8.108V16a2 2 0 002 2h12a2 2 0 002-2V8.108a2 2 0 00-.94-1.696l-6-3.75a2 2 0 00-2.12 0l-6 3.75zm2.615 2.423a1 1 0 10-1.11 1.664l5 3.333a1 1 0 001.11 0l5-3.333a1 1 0 00-1.11-1.664L10 11.798 5.555 8.835z" clip-rule="evenodd"/>
+                        </svg>
+                        <span>Contact Support</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Useful Links (Mobile only) -->
+            <div class="text-center mt-8 block lg:hidden">
+                <h2 class="text-lg font-semibold text-white mb-4 underline">Useful Links</h2>
+                <ul class="space-y-2">
+                    <li><a href="{% url 'about' %}" class="text-gray-300 hover:text-yellow-400 transition">About Us</a></li>
+                    <li><a href="{% url 'contact' %}" class="text-gray-300 hover:text-yellow-400 transition">Contact</a></li>
+                    <li><a href="{% url 'faq' %}" class="text-gray-300 hover:text-yellow-400 transition">FAQs</a></li>
+                    <li><a href="{% url 'terms' %}" class="text-gray-300 hover:text-yellow-400 transition">Terms & Conditions</a></li>
+                    <li><a href="{% url 'privacy' %}" class="text-gray-300 hover:text-yellow-400 transition">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

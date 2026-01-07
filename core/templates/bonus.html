@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}Bonus & Rewards - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-purple-900 p-4">
+    <div class="max-w-md mx-auto">
+
+        <!-- Back Button & Header -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'home' %}" class="p-2 rounded-full bg-gray-800 shadow-lg mr-3">
+                ←
+            </a>
+            <h1 class="text-2xl font-bold text-white">Bonus & Rewards</h1>
+        </div>
+
+        <!-- Wallet Balance -->
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <div class="text-center">
+                <p class="text-gray-300 mb-2">Available Balance</p>
+                <p class="text-3xl font-bold text-green-600">
+                    {{ currency_symbol }}{{ wallet_balance|floatformat:2 }}
+                </p>
+                <p class="text-sm text-gray-400 mt-2">
+                    Total bonuses earned:
+                    {{ currency_symbol }}{{ total_bonuses_earned|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Available Bonuses -->
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-white mb-4">Available Bonuses</h2>
+
+            <div class="space-y-4">
+                {% for bonus in available_bonuses %}
+                <div class="p-4 rounded-xl border-2 border-yellow-400 bg-yellow-900/20">
+
+                    <div class="flex justify-between items-start mb-2">
+                        <div>
+                            <h3 class="font-semibold text-white">{{ bonus.title }}</h3>
+                            <p class="text-sm text-gray-300 mt-1">{{ bonus.description }}</p>
+
+                            {% if bonus.min_deposit > 0 %}
+                            <p class="text-xs text-gray-400 mt-1">
+                                Min. deposit:
+                                {{ currency_symbol }}{{ bonus.converted_min_deposit|floatformat:2 }}
+                            </p>
+                            {% endif %}
+                        </div>
+
+                        <span class="px-3 py-1 rounded-full text-sm font-semibold bg-green-500 text-white">
+                            {% if bonus.bonus_type == 'percentage' %}
+                                {{ bonus.amount }}%
+                            {% else %}
+                                {{ currency_symbol }}{{ bonus.converted_amount|floatformat:2 }}
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <form method="post" class="mt-2">
+                        {% csrf_token %}
+                        <input type="hidden" name="bonus_id" value="{{ bonus.id }}">
+                        <button type="submit"
+                            class="w-full py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white font-semibold rounded-lg">
+                            Claim Bonus
+                        </button>
+                    </form>
+                </div>
+                {% empty %}
+                <div class="text-center py-8 text-gray-400">
+                    No available bonuses at the moment
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Referral Section -->
+        <div class="bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl shadow-lg p-6 mb-6 text-white">
+            <h3 class="text-xl font-bold mb-2 text-center">Invite Friends & Earn</h3>
+
+            <p class="text-purple-100 text-center mb-4">
+                Earn {{ currency_symbol }}1000 for each friend who joins & deposits
+            </p>
+
+            <button onclick="shareReferral()"
+                    class="w-full py-3 bg-white text-purple-600 rounded-xl font-semibold">
+                Share Referral Link
+            </button>
+
+            <p class="mt-3 text-center text-purple-200 text-sm">
+                Your code: <strong>{{ user.phone_number }}</strong>
+            </p>
+        </div>
+
+        <!-- Bonus History -->
+        <div class="bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                Bonus History
+            </h3>
+            <div class="space-y-3">
+                {% for h in bonus_history %}
+                <div class="flex justify-between items-center p-3 bg-gray-700 rounded-lg">
+                    <div>
+                        <p class="font-medium text-white">{{ h.description }}</p>
+                        <p class="text-sm text-gray-400">{{ h.created_at|date:"M d, Y" }}</p>
+                    </div>
+                    <p class="text-green-600 font-semibold">
+                        +{{ currency_symbol }}{{ h.converted_amount|floatformat:2 }}
+                    </p>
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-400 py-6">No bonus history yet</p>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+function shareReferral() {
+    const code = '{{ user.phone_number }}';
+    const link = `https://pesaprime.com/invite?ref=${code}`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'Join PesaPrime',
+            text: 'Start investing and earn rewards!',
+            url: link,
+        });
+    } else {
+        navigator.clipboard.writeText(link);
+        alert("Referral link copied!");
+    }
+}
+</script>
+
+{% endblock %}

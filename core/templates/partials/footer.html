@@ -1,0 +1,57 @@
+<footer class="bg-emerald-800 text-white text-center rounded-t-2xl hidden lg:block dark:bg-gray-800 border-t border-green-300 mt-8">
+    <div class="bg-emerald-900 text-white rounded-2xl px-2 pb-6 text-center item-center dark:bg-gray-900 pt-6">
+        <span class="text-yellow-700 font-bold">Pesa</span>
+        <span class="text-blue-300 font-bold">Prime</span> Capital.
+        
+        <div class="max-w-7xl mx-auto">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 py-4">
+                <div>
+                    <div class="max-w-lg mx-auto text-center">
+                        <br />
+                        <p class="leading-relaxed text-center text-[14px] mt-4 dark:text-gray-300">
+                            PesaPrime Capital was founded in 2023 with a mission to make investment accessible to all. Since then, we've proudly served thousands of happy customers across Kenya and beyond. Our passion is delivering quality and value you can trust.
+                        </p>
+                    </div>
+                    <!-- Newsletter -->
+                    {% comment %} <div class="max-w-lg mx-auto mt-8">
+                        <form method="post" action="{% url 'core:newsletter' %}" class="flex flex-col sm:flex-row items-center justify-center gap-2">
+                            {% csrf_token %}
+                            <input 
+                                type="email" 
+                                name="email"
+                                placeholder="Enter your email"
+                                required
+                                class="w-full sm:w-auto px-4 py-2 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-yellow-400 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
+                            />
+                            <button
+                                type="submit"
+                                class="bg-indigo-600 hover:bg-yellow-700 text-white px-6 py-2 rounded-lg shadow-md transition dark:bg-indigo-700 dark:hover:bg-indigo-600">
+                                Subscribe
+                            </button>
+                        </form>
+                        <p class="text-sm text-gray-400 mt-2 text-center dark:text-gray-500">
+                            Join our newsletter to get the latest deals & updates.
+                        </p>
+                    </div> {% endcomment %}
+                </div>
+
+                <div class="text-center">
+                    <h2 class="text-lg font-semibold text-white mb-4 underline dark:text-gray-200">Useful Links</h2>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'about' %}" class="text-gray-300 hover:text-yellow-400 transition dark:text-gray-400 dark:hover:text-yellow-300">About Us</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-gray-300 hover:text-yellow-400 transition dark:text-gray-400 dark:hover:text-yellow-300">Contact</a></li>
+                        <li><a href="{% url 'faq' %}" class="text-gray-300 hover:text-yellow-400 transition dark:text-gray-400 dark:hover:text-yellow-300">FAQs</a></li>
+                        <li><a href="{% url 'terms' %}" class="text-gray-300 hover:text-yellow-400 transition dark:text-gray-400 dark:hover:text-yellow-300">Terms & Conditions</a></li>
+                        <li><a href="{% url 'privacy' %}" class="text-gray-300 hover:text-yellow-400 transition dark:text-gray-400 dark:hover:text-yellow-300">Privacy Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    
+        <div class="py-8">
+            <div class="mt-4 sm:mt-0 dark:text-gray-400">
+                &copy; {{ current_year|default:"2025" }} PesaPrime Capital. All rights reserved.
+            </div>
+        </div>
+    </div>
+</footer>

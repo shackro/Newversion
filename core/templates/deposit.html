@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Deposit - PesaPrime{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 p-4">
+    <div class="max-w-md mx-auto">
+        <!-- Header -->
+        <div class="flex items-center mb-6">
+            <a href="{% url 'home' %}" class="p-2 rounded-full bg-gray-800 shadow-lg mr-3">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path fillRule="evenodd" d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z"/>
+                </svg>
+            </a>
+            <h1 class="text-2xl font-bold text-white">Deposit Funds</h1>
+        </div>
+
+        <!-- Current Balance Card -->
+        <div class="text-white bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <div class="text-center">
+                <p class="text-gray-300 mb-2">Current Balance</p>
+                <p class="text-3xl font-bold text-green-600">
+                    {{ currency_symbol }}{{ wallet_balance|default:0|floatformat:2 }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Deposit Card -->
+        <div class=" text-white bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
+            <h2 class="text-xl font-semibold text-gray-800 dark:text-white mb-4">
+                Deposit Amount
+            </h2>
+
+            <!-- Deposit Form -->
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                {{ form|crispy }}
+                
+                <!-- Quick Amounts -->
+                <p class="text-gray-700 dark:text-gray-300 mb-3">Quick Select</p>
+                <div class="grid grid-cols-3 gap-2">
+                    {% for amt in quick_amounts %}
+                    <button type="button" class="quick-amount py-2 px-3 bg-gray-100 dark:bg-gray-600 hover:bg-green-500 hover:text-white rounded-lg transition duration-200 text-gray-700 dark:text-gray-300">
+                        {{ currency_symbol }} {{ amt|floatformat:0 }}
+                    </button>
+                    {% endfor %}
+                </div>
+
+                <!-- Deposit Button -->
+                <button type="submit"
+                        class="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 disabled:from-gray-400 disabled:to-gray-500 text-white rounded-xl font-semibold text-lg transition duration-200 disabled:cursor-not-allowed">
+                    Deposit Now
+                </button>
+
+                <!-- User Info -->
+                <div class="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
+                    Depositing to: {{ user.phone_number }}
+                </div>
+            </form>
+        </div>
+
+        <!-- Recent Deposits -->
+        <div class="text-white bg-gray-800 rounded-2xl shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-white mb-4">
+                Recent Deposits
+            </h3>
+            <div class="space-y-3">
+                {% for deposit in deposits %}
+                <div class="flex justify-between items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                    <div>
+                        <p class="font-medium text-gray-800 dark:text-white">
+                            Deposit via {{ deposit.payment_method }}
+                        </p>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                            {{ deposit.created_at|date:"M d, Y" }}
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-green-600 font-semibold">
+                            + {{ currency_symbol }} {{ deposit.amount|floatformat:2 }}
+                        </p>
+                        <p class="text-xs text-gray-500 capitalize">
+                            {{ deposit.get_status_display }}
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+                    <p>No recent deposits</p>
+                    <p class="text-sm">Your deposit history will appear here</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Security Note -->
+        <div class="mt-6 p-4 bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-xl">
+            <div class="flex items-start">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="text-yellow-600 mt-0.5 mr-2 flex-shrink-0" viewBox="0 0 16 16">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+                <div>
+                    <p class="text-sm text-yellow-800 dark:text-yellow-200 font-semibold">
+                        Secure Transaction
+                    </p>
+                    <p class="text-xs text-yellow-700 dark:text-yellow-300">
+                        Your funds are secured with bank-level encryption. Deposits are processed instantly.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Quick amount selection
+    document.querySelectorAll('.quick-amount').forEach(button => {
+        button.addEventListener('click', function() {
+            const text = this.textContent.trim();
+            const amount = text.replace(/[^\d.]/g, '');
+            document.getElementById('id_amount').value = amount;
+        });
+    });
+
+    // Optional: Update balance after form submission via AJAX
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(form);
+
+        fetch("", {method: "POST", body: formData, headers: {'X-Requested-With':'XMLHttpRequest'}})
+        .then(response => response.text())
+        .then(html => {
+            alert("Deposit successful!");
+            location.reload(); // refresh page with updated balance
+        });
+    });
+</script>
+{% endblock %}

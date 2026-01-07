@@ -1,0 +1,131 @@
+<!-- templates/components/number_carousel.html -->
+<div id="number-carousel" class="mt-6 relative overflow-hidden bg-gray-800 rounded-lg py-4">
+  <div class="relative">
+    <!-- Currency Indicator -->
+    <div class="absolute top-2 right-4 z-20">
+        <div class="bg-emerald-900 text-white text-xs px-2 py-1 rounded-full">
+            <span id="carousel-currency">Loading...</span>
+        </div>
+    </div>
+
+    <!-- Left Gradient Overlay -->
+    <div class="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-gray-800 to-transparent z-10"></div>
+
+    <!-- Right Gradient Overlay -->
+    <div class="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-gray-800 to-transparent z-10"></div>
+
+    <!-- Carousel Track -->
+    <div id="carousel-track" class="flex space-x-3 animate-scroll"></div>
+  </div>
+</div>
+
+<script>
+async function fetchNumbers() {
+    try {
+        const response = await fetch("{% url 'number_carousel' %}");
+        const data = await response.json();
+        const track = document.getElementById('carousel-track');
+        
+        // Update currency indicator
+        const currencyIndicator = document.getElementById('carousel-currency');
+        if (data.numbers.length > 0) {
+            currencyIndicator.textContent = data.numbers[0].currency_code;
+        }
+        
+        track.innerHTML = '';
+
+        data.numbers.forEach(number => {
+            const card = document.createElement('div');
+            card.className = "flex-shrink-0 w-60 bg-gradient-to-br from-teal-500 to-emerald-600 rounded-lg p-3 text-center shadow-lg transform hover:scale-105 transition-transform duration-300 border border-teal-400/20";
+            
+            const profit = number.profit;
+            const profitColor = profit > 0 ? 'green' : (profit < 0 ? 'red' : 'gray');
+            const profitSign = profit > 0 ? '+' : '';
+            const profitIcon = profit > 0 ? '📈' : (profit < 0 ? '📉' : '➡️');
+            
+            // Format amount with currency symbol
+            const amountFormatted = new Intl.NumberFormat('en-US', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            }).format(number.amount);
+
+            card.innerHTML = `
+                <div class="mb-2">
+                    <div class="text-white font-bold text-lg tracking-wider">${number.phone}</div>
+                </div>
+                
+                <div class="flex items-center justify-center space-x-2 mb-3">
+                    <div class="text-xl">${profitIcon}</div>
+                    <div class="bg-${profitColor}-500/20 px-3 py-1 rounded-full">
+                        <span class="text-${profitColor}-300 font-bold text-sm">
+                            ${profitSign}${Math.abs(profit)}%
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="bg-teal-600/30 rounded-lg p-2">
+                    <div class="text-white font-bold text-xl">
+                        ${number.currency_symbol}${amountFormatted}
+                    </div>
+                    <div class="text-teal-300 text-xs mt-1 opacity-75">
+                        ~$${number.amount_usd.toLocaleString('en-US', {minimumFractionDigits: 2})} USD
+                    </div>
+                </div>
+            `;
+            track.appendChild(card);
+        });
+    } catch (error) {
+        console.error('Error fetching carousel data:', error);
+    }
+}
+
+// Fetch initially
+fetchNumbers();
+
+// Refresh every 30 seconds
+setInterval(fetchNumbers, 30000);
+
+// Also refresh when currency changes
+document.addEventListener('currencyChanged', fetchNumbers);
+</script>
+
+<style>
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-scroll {
+  display: flex;
+  animation: scroll 30s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}
+
+/* Dynamic color classes for Tailwind */
+.bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.2);
+}
+
+.text-green-300 {
+  color: rgb(134, 239, 172);
+}
+
+.bg-red-500\/20 {
+  background-color: rgba(239, 68, 68, 0.2);
+}
+
+.text-red-300 {
+  color: rgb(252, 165, 165);
+}
+
+.bg-gray-500\/20 {
+  background-color: rgba(107, 114, 128, 0.2);
+}
+
+.text-gray-300 {
+  color: rgb(209, 213, 219);
+}
+</style>

@@ -1,0 +1,302 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Assets - PesaPrime{% endblock %}
+
+{% block extra_css %}
+<style>
+.asset-card { transition: all 0.3s ease; }
+.asset-card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1),0 10px 10px -5px rgba(0,0,0,0.04); }
+.price-tag { font-feature-settings:"tnum"; font-variant-numeric:tabular-nums; }
+.trend-up { color: #10b981; }
+.trend-down { color: #ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="mx-2 mb-24 flex flex-col items-center justify-center overflow-x-hidden lg:mt-8">
+    
+    <!-- Header with Refresh Controls -->
+    <div class="w-full mb-6 bg-gradient-to-r from-gray-800 to-gray-900 rounded-xl p-4">
+        <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+            <!-- Currency Info -->
+            <div class="text-white">
+                <h1 class="text-2xl font-bold">Market Assets</h1>
+                <p class="text-sm opacity-80">
+                    Prices in {{ current_currency.code }} ({{ current_currency.symbol }}) • 
+                    Last refresh: {{ last_refresh }}
+                    {% if stale_count > 0 %}
+                    • <span class="text-yellow-300">{{ stale_count }} assets need update</span>
+                    {% endif %}
+                </p>
+            </div>
+            
+            <!-- Refresh Controls -->
+            <div class="flex gap-2">
+                <!-- Quick Refresh (only stale prices) -->
+                <a href="?refresh=true{% if selected_category != 'all' %}&category={{ selected_category }}{% endif %}" 
+                   class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition">
+                    🔄 Refresh Prices
+                </a>
+                
+                <!-- Update All Prices -->
+                <a href="?update_all=true" 
+                   class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition">
+                    ⚡ Update All
+                </a>
+                
+                <!-- Back to Dashboard -->
+                <a href="{% url 'home' %}" 
+                   class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg font-semibold transition">
+                    ← Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Filter -->
+    <div class="w-full mb-6">
+        <div class="flex flex-wrap gap-2 justify-center">
+            {% for cat in categories %}
+            <a href="?category={{ cat.id }}"
+               class="px-4 py-2 rounded-lg font-medium transition
+                      {% if selected_category == cat.id %}
+                      bg-gradient-to-r from-blue-600 to-purple-600 text-white
+                      {% else %}
+                      bg-gray-700 text-gray-300 hover:bg-gray-600
+                      {% endif %}">
+                {{ cat.name }} ({{ cat.count }})
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Wallet Summary -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 w-full">
+        <div class="bg-gradient-to-br from-orange-500 to-amber-900 p-4 rounded-xl text-white">
+            <h4 class="font-semibold">Available Balance</h4>
+            <p class="text-xl font-bold">{{ currency_symbol }}{{ wallet_balance|floatformat:2 }}</p>
+            <p class="text-sm opacity-80 mt-1">Ready to invest</p>
+        </div>
+        
+        <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-xl text-white">
+            <h4 class="font-semibold">Invested Balance</h4>
+            <p class="text-xl font-bold">{{ currency_symbol }}{{ wallet_equity|floatformat:2 }}</p>
+            <p class="text-sm opacity-80 mt-1">Currently invested</p>
+        </div>
+        
+        <div class="bg-gradient-to-br from-blue-500 to-indigo-600 p-4 rounded-xl text-white">
+            <h4 class="font-semibold">Total Invested</h4>
+            <p class="text-xl font-bold">{{ currency_symbol }}{{ total_invested|floatformat:2 }}</p>
+            <p class="text-sm opacity-80 mt-1">All-time investment</p>
+        </div>
+        
+        <div class="bg-gradient-to-br p-4 rounded-xl text-white 
+            {% if total_profit_loss >= 0 %}from-green-500 to-emerald-600{% else %}from-red-500 to-rose-600{% endif %}">
+            <h4 class="font-semibold">Total P&L</h4>
+            <p class="text-xl font-bold">
+                {% if total_profit_loss >= 0 %}+{% endif %}{{ currency_symbol }}{{ total_profit_loss|floatformat:2 }}
+            </p>
+            <p class="text-sm opacity-80 mt-1">Profit/Loss</p>
+        </div>
+    </div>
+
+    <!-- Top Gainers / Losers -->
+    <div class="grid md:grid-cols-2 gap-6 mb-6 w-full">
+        <!-- Top Gainers -->
+        <div class="bg-gradient-to-br from-green-700 to-emerald-900 rounded-xl p-4 text-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">📈 Top Gainers</h3>
+                <span class="text-sm opacity-80">Today</span>
+            </div>
+            <div class="space-y-3">
+                {% for asset in top_gainers %}
+                <div class="flex items-center justify-between p-3 bg-green-800/30 rounded-lg hover:bg-green-800/50 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center">
+                            {{ asset.symbol|slice:":3" }}
+                        </div>
+                        <div>
+                            <p class="font-semibold">{{ asset.name }}</p>
+                            <p class="text-xs opacity-75">{{ asset.symbol }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">{{ currency_symbol }}{{ asset.display_price|floatformat:2 }}</p>
+                        <p class="text-green-300 font-semibold text-sm">
+                            ▲ +{{ asset.change_percentage|floatformat:2 }}%
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-300 py-4">No gainers available.</p>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Top Losers -->
+        <div class="bg-gradient-to-br from-red-700 to-pink-900 rounded-xl p-4 text-white">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold">📉 Top Losers</h3>
+                <span class="text-sm opacity-80">Today</span>
+            </div>
+            <div class="space-y-3">
+                {% for asset in top_losers %}
+                <div class="flex items-center justify-between p-3 bg-red-800/30 rounded-lg hover:bg-red-800/50 transition">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center">
+                            {{ asset.symbol|slice:":3" }}
+                        </div>
+                        <div>
+                            <p class="font-semibold">{{ asset.name }}</p>
+                            <p class="text-xs opacity-75">{{ asset.symbol }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-bold">{{ currency_symbol }}{{ asset.display_price|floatformat:2 }}</p>
+                        <p class="text-red-300 font-semibold text-sm">
+                            ▼ {{ asset.change_percentage|floatformat:2 }}%
+                        </p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-300 py-4">No losers available.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Market Assets Grid -->
+    <div class="w-full mb-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-2xl font-bold text-white">
+                {% if selected_category == 'all' %}
+                💎 All Market Assets
+                {% elif selected_category == 'crypto' %}
+                🔐 Cryptocurrencies
+                {% elif selected_category == 'forex' %}
+                💱 Forex Pairs
+                {% elif selected_category == 'futures' %}
+                ⚖️ Futures
+                {% elif selected_category == 'stock' %}
+                📊 Stocks
+                {% endif %}
+            </h2>
+            <div class="text-sm text-gray-300">
+                Showing {{ market_assets|length }} assets
+            </div>
+        </div>
+        
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            {% for asset in market_assets %}
+            <div class="asset-card bg-gray-800 rounded-xl shadow-lg p-4 border border-gray-700">
+                <!-- Asset Header -->
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 rounded-full 
+                            {% if asset.category == 'crypto' %}bg-yellow-900/30
+                            {% elif asset.category == 'forex' %}bg-blue-900/30
+                            {% elif asset.category == 'futures' %}bg-purple-900/30
+                            {% else %}bg-green-900/30{% endif %} 
+                            flex items-center justify-center">
+                            <span class="font-bold text-white">{{ asset.symbol|slice:":3" }}</span>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-white">{{ asset.name }}</h3>
+                            <p class="text-sm text-gray-400">{{ asset.symbol }}</p>
+                        </div>
+                    </div>
+                    <span class="text-xs px-2 py-1 rounded-full 
+                        {% if asset.change_percentage >= 0 %}bg-green-900 text-green-300
+                        {% else %}bg-red-900 text-red-300{% endif %}">
+                        {% if asset.change_percentage >= 0 %}+{% endif %}{{ asset.change_percentage|floatformat:2 }}%
+                    </span>
+                </div>
+                
+                <!-- Price Info -->
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Current Price:</span>
+                        <span class="font-bold text-white">
+                            {{ currency_symbol }}{{ asset.display_price|floatformat:2 }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Min Investment:</span>
+                        <span class="font-semibold text-blue-400">
+                            {{ currency_symbol }}{{ asset.display_min_investment|floatformat:2 }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Last Updated:</span>
+                        <span class="text-sm text-gray-300">{{ asset.last_updated_str }}</span>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex gap-2">
+                    <a href="{% url 'invest_asset' asset.id %}" 
+                       class="flex-1 text-center bg-gradient-to-r from-emerald-600 to-teal-500 hover:from-emerald-700 hover:to-teal-600 
+                              text-white font-semibold py-2 px-3 rounded-lg transition text-sm">
+                        Invest
+                    </a>
+                    <a href="{% url 'asset_detail' asset.id %}" 
+                       class="px-3 py-2 bg-gray-700 hover:bg-gray-600 text-white rounded-lg transition text-sm">
+                        Details
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full text-center py-12">
+                <div class="text-gray-400 text-lg mb-2">No assets found</div>
+                <p class="text-gray-500">Try selecting a different category or check back later.</p>
+                <a href="?category=all" class="mt-4 inline-block px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
+                    Show All Assets
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh notification
+function checkForStalePrices() {
+    const staleCount = {{ stale_count }};
+    if (staleCount > 0) {
+        // Show notification bubble
+        const notification = document.createElement('div');
+        notification.className = 'fixed bottom-4 right-4 bg-yellow-600 text-white px-4 py-2 rounded-lg shadow-lg animate-pulse';
+        notification.innerHTML = `
+            <div class="flex items-center space-x-2">
+                <span>⚠️ {{ stale_count }} prices need update</span>
+                <a href="?refresh=true" class="ml-2 underline">Refresh Now</a>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-2">✕</button>
+            </div>
+        `;
+        document.body.appendChild(notification);
+        
+        // Auto-remove after 10 seconds
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 10000);
+    }
+}
+
+// Check on page load
+document.addEventListener('DOMContentLoaded', checkForStalePrices);
+
+// Refresh button animation
+document.querySelectorAll('a[href*="refresh=true"], a[href*="update_all=true"]').forEach(link => {
+    link.addEventListener('click', function(e) {
+        this.innerHTML = '<span class="animate-spin">⟳</span> Updating...';
+        this.classList.add('opacity-75', 'cursor-not-allowed');
+    });
+});
+</script>
+{% endblock %}
