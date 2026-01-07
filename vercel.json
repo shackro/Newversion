@@ -4,30 +4,15 @@
       "src": "pesaprime/wsgi.py",
       "use": "@vercel/python",
       "config": {
-        "maxLambdaSize": "15mb",
-        "runtime": "python3.11"
+        "installCommand": "pip install -r requirements.txt",
+        "maxLambdaSize": "15mb"
       }
     }
   ],
   "routes": [
     {
       "src": "/static/(.*)",
-      "dest": "/static/$1",
-      "headers": {
-        "Cache-Control": "public, max-age=31536000, immutable"
-      }
-    },
-    {
-      "src": "/media/(.*)",
-      "dest": "/media/$1"
-    },
-    {
-      "src": "/favicon.ico",
-      "dest": "/static/favicon.ico"
-    },
-    {
-      "src": "/robots.txt",
-      "dest": "/static/robots.txt"
+      "dest": "/static/$1"
     },
     {
       "src": "/(.*)",
@@ -38,8 +23,7 @@
     "PYTHONPATH": "/var/task",
     "DJANGO_SETTINGS_MODULE": "pesaprime.settings",
     "DEBUG": "False",
-    "ALLOWED_HOSTS": ".vercel.app,.now.sh",
-    "CSRF_TRUSTED_ORIGINS": "https://pesaprime2026.vercel.app,https://*.now.sh"
+    "ALLOWED_HOSTS": "pesaprime2026.vercel.app,.now.sh",
+    "CSRF_TRUSTED_ORIGINS": "https://*.vercel.app,https://*.now.sh"
   }
 }
-

@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frequently Asked Questions - PesaPrime</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin: 40px 0;
+        }
+        
+        h1 {
+            color: #2d3748;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 15px;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .search-box {
+            margin: 30px 0;
+            position: relative;
+        }
+        
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 50px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .search-box input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a0aec0;
+        }
+        
+        .faq-category {
+            margin: 40px 0;
+        }
+        
+        .category-title {
+            color: #4a5568;
+            padding: 15px;
+            background: #f7fafc;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .category-icon {
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .faq-item {
+            margin-bottom: 15px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        
+        .faq-item.active {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+        
+        .faq-question {
+            padding: 20px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #4a5568;
+            transition: background 0.3s;
+        }
+        
+        .faq-question:hover {
+            background: #f7fafc;
+        }
+        
+        .faq-question .icon {
+            color: #667eea;
+            font-size: 1.2rem;
+            transition: transform 0.3s;
+        }
+        
+        .faq-item.active .faq-question .icon {
+            transform: rotate(45deg);
+        }
+        
+        .faq-answer {
+            padding: 0 20px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s, padding 0.3s;
+            color: #718096;
+            line-height: 1.8;
+        }
+        
+        .faq-item.active .faq-answer {
+            padding: 0 20px 20px 20px;
+            max-height: 500px;
+        }
+        
+        .highlight {
+            background: linear-gradient(120deg, #e0e7ff 0%, #ede9fe 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #667eea;
+        }
+        
+        .warning {
+            background: linear-gradient(120deg, #fed7d7 0%, #feebc8 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .success {
+            background: linear-gradient(120deg, #c6f6d5 0%, #d6f5e3 100%);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #38a169;
+        }
+        
+        .contact-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 50px;
+            text-align: center;
+        }
+        
+        .contact-card h2 {
+            color: white;
+            margin-bottom: 20px;
+        }
+        
+        .btn-contact {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 15px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-contact:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(255, 255, 255, 0.3);
+        }
+        
+        .btn-back {
+            display: inline-block;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            margin-top: 30px;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .btn-back:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .container {
+                padding: 20px;
+            }
+            
+            .faq-question {
+                font-size: 14px;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Frequently Asked Questions</h1>
+        
+        <div class="search-box">
+            <input type="text" id="faqSearch" placeholder="Search for questions...">
+            <span class="search-icon">🔍</span>
+        </div>
+        
+        <!-- Account & Registration -->
+        <div class="faq-category">
+            <div class="category-title">
+                <span class="category-icon">👤</span>
+                Account & Registration
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I create an account?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Click the "Sign Up" button on the homepage, fill in your details (name, email, phone), verify your email, and complete the KYC verification process. You'll need to provide valid identification documents.</p>
+                    <div class="highlight">
+                        <p><strong>Tip:</strong> Use a valid email address and phone number as you'll need to verify both.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What documents do I need for verification?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>You'll need:</p>
+                    <ul>
+                        <li>Government-issued ID (Passport, National ID, or Driver's License)</li>
+                        <li>Recent utility bill or bank statement (proof of address)</li>
+                        <li>Recent passport-sized photograph</li>
+                    </ul>
+                    <div class="warning">
+                        <p><strong>Important:</strong> All documents must be clear, valid, and show your full name matching your registration details.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How long does verification take?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Typically 24-48 hours. We review all documents manually to ensure security and compliance. You'll receive an email notification once your account is verified.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Deposits & Withdrawals -->
+        <div class="faq-category">
+            <div class="category-title">
+                <span class="category-icon">💰</span>
+                Deposits & Withdrawals
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What payment methods do you accept?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We accept multiple payment methods:</p>
+                    <ul>
+                        <li><strong>M-Pesa:</strong> Instant deposits for Kenyan users</li>
+                        <li><strong>Bank Transfer:</strong> Local and international bank transfers</li>
+                        <li><strong>Credit/Debit Cards:</strong> Visa, MasterCard, American Express</li>
+                        <li><strong>Mobile Money:</strong> For users in supported countries</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How long do withdrawals take?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Withdrawal processing times:</p>
+                    <ul>
+                        <li><strong>M-Pesa:</strong> 1-2 hours during business hours</li>
+                        <strong>Bank Transfer:</strong> 24-48 hours
+                        <li><strong>Weekends/Holidays:</strong> May experience delays</li>
+                    </ul>
+                    <div class="highlight">
+                        <p><strong>Note:</strong> First withdrawals may take longer due to security verification.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Are there any fees for deposits or withdrawals?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Deposits are free. Withdrawal fees vary:</p>
+                    <ul>
+                        <li>M-Pesa: 1% (minimum KSh 30)</li>
+                        <li>Bank Transfer: 2% (minimum $10)</li>
+                        <li>Card Withdrawals: 3% (minimum $15)</li>
+                    </ul>
+                    <div class="warning">
+                        <p><strong>Important:</strong> Network fees may apply depending on your bank or mobile money provider.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Investments -->
+        <div class="faq-category">
+            <div class="category-title">
+                <span class="category-icon">📈</span>
+                Investments
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What is the minimum investment amount?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>The minimum investment varies by asset:</p>
+                    <ul>
+                        <li><strong>Cryptocurrencies:</strong> $10 equivalent</li>
+                        <li><strong>Forex:</strong> $50 equivalent</li>
+                        <li><strong>Futures:</strong> $100 equivalent</li>
+                        <li><strong>Stocks:</strong> $25 equivalent</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How are investment returns calculated?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Returns are calculated based on:</p>
+                    <ul>
+                        <li><strong>Investment Amount:</strong> Your principal investment</li>
+                        <li><strong>Duration:</strong> Investment period (1-24 hours)</li>
+                        <li><strong>Return Rate:</strong> Asset-specific percentage return</li>
+                        <li><strong>Market Conditions:</strong> Real-time market performance</li>
+                    </ul>
+                    <p><strong>Formula:</strong> Profit = (Investment Amount × Return Rate × Duration Factor) ± Market Fluctuations</p>
+                    <div class="success">
+                        <p><strong>Example:</strong> $100 invested at 1.5% for 3 hours = $104.50 return (including principal).</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Can I withdraw my investment before it matures?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Early withdrawal is possible with conditions:</p>
+                    <ul>
+                        <li>75% of your principal is returned</li>
+                        <li>No profits earned during the period</li>
+                        <li>15% early withdrawal fee applies</li>
+                        <li>Available only after 1 hour of investment</li>
+                    </ul>
+                    <div class="warning">
+                        <p><strong>Important:</strong> We recommend allowing investments to complete for maximum returns.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>Are investments guaranteed?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <div class="warning">
+                        <p><strong>No investment is 100% guaranteed.</strong> All investments carry risks. While we use advanced algorithms and risk management, market conditions can affect returns.</p>
+                    </div>
+                    <p>Our success rate is 92%, but past performance doesn't guarantee future results. Only invest what you can afford to lose.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security -->
+        <div class="faq-category">
+            <div class="category-title">
+                <span class="category-icon">🔒</span>
+                Security & Safety
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How secure is my money and data?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>We implement multiple security layers:</p>
+                    <ul>
+                        <li><strong>Bank-Level Encryption:</strong> 256-bit SSL encryption for all data</li>
+                        <li><strong>Cold Storage:</strong> 95% of funds stored offline</li>
+                        <li><strong>2FA:</strong> Optional two-factor authentication</li>
+                        <li><strong>Regular Audits:</strong> Monthly security audits by third parties</li>
+                        <li><strong>Insurance:</strong> Funds insured against platform failure</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What should I do if I suspect unauthorized access?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Immediately:</p>
+                    <ol>
+                        <li>Change your password</li>
+                        <li>Enable 2FA if not already active</li>
+                        <li>Contact support@pesaprime.com</li>
+                        <li>Freeze your account through security settings</li>
+                        <li>Review recent transactions</li>
+                    </ol>
+                    <div class="highlight">
+                        <p><strong>Important:</strong> We monitor accounts 24/7 for suspicious activity and will notify you of any detected anomalies.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Technical Support -->
+        <div class="faq-category">
+            <div class="category-title">
+                <span class="category-icon">🛠️</span>
+                Technical Support
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>How do I contact customer support?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Multiple support channels available:</p>
+                    <ul>
+                        <li><strong>Email:</strong> support@pesaprime.com (24/7)</li>
+                        <li><strong>Live Chat:</strong> Available on website (8 AM - 8 PM EAT)</li>
+                        <li><strong>Phone:</strong> +254 700 000 000 (9 AM - 5 PM EAT)</li>
+                        <li><strong>Help Center:</strong> Comprehensive guides and tutorials</li>
+                    </ul>
+                    <p>Average response time: 15 minutes for chat, 1 hour for email.</p>
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">
+                    <span>What if I forget my password?</span>
+                    <span class="icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    <p>Click "Forgot Password" on the login page. You'll receive:</p>
+                    <ol>
+                        <li>Password reset link via email</li>
+                        <li>OTP verification via SMS</li>
+                        <li>Security question verification</li>
+                    </ol>
+                    <p>If you no longer have access to your email/phone, contact support with your account details and verification documents.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Card -->
+        <div class="contact-card">
+            <h2>Still Have Questions?</h2>
+            <p>Our support team is ready to help you 24/7.</p>
+            <a href="mailto:support@pesaprime.com" class="btn-contact">Contact Support</a>
+        </div>
+        
+        <div style="text-align: center; margin-top: 40px;">
+            <a href="/" class="btn-back">← Back to Home</a>
+        </div>
+    </div>
+    
+    <script>
+        // FAQ toggle functionality
+        document.querySelectorAll('.faq-question').forEach(question => {
+            question.addEventListener('click', () => {
+                const item = question.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+        
+        // Search functionality
+        document.getElementById('faqSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const items = document.querySelectorAll('.faq-item');
+            
+            items.forEach(item => {
+                const question = item.querySelector('.faq-question span:first-child').textContent.toLowerCase();
+                const answer = item.querySelector('.faq-answer').textContent.toLowerCase();
+                
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    item.classList.add('active'); // Open matching items
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Show/hide categories based on visible items
+            document.querySelectorAll('.faq-category').forEach(category => {
+                const visibleItems = category.querySelectorAll('.faq-item[style="display: block"], .faq-item:not([style])');
+                category.style.display = visibleItems.length > 0 ? 'block' : 'none';
+            });
+        });
+        
+        // Open first item by default
+        document.querySelector('.faq-item').classList.add('active');
+    </script>
+</body>
+</html>

@@ -1,14 +1,16 @@
 #!/bin/bash
-echo "🚀 Starting Vercel build process..."
+set -e
 
-# Install Python dependencies
+echo "🚀 Starting Vercel build..."
+
+# Install dependencies
 pip install -r requirements.txt
 
-# Create static directory if it doesn't exist
+# Create static directory
 mkdir -p static
 
-# Create a simple favicon to avoid errors
-echo '<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💰</text></svg>">' > static/favicon.ico
+# Create basic favicon
+echo '<link rel="icon" href="data:,">' > static/favicon.ico
 
 # Create robots.txt
 echo 'User-agent: *' > static/robots.txt
@@ -17,4 +19,12 @@ echo 'Disallow:' >> static/robots.txt
 # Collect static files
 python manage.py collectstatic --noinput
 
-echo "✅ Build completed!"
+# Run migrations if DATABASE_URL is set (PostgreSQL)
+if [ -n "$DATABASE_URL" ]; then
+    echo "📦 Setting up PostgreSQL database..."
+    python setup_database.py
+else
+    echo "⚠️  No DATABASE_URL found. Skipping database setup."
+fi
+
+echo "✅ Build complete!"
