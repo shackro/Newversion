@@ -1,0 +1,45 @@
+{
+  "builds": [
+    {
+      "src": "pesaprime/wsgi.py",
+      "use": "@vercel/python",
+      "config": {
+        "maxLambdaSize": "15mb",
+        "runtime": "python3.11"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/static/(.*)",
+      "dest": "/static/$1",
+      "headers": {
+        "Cache-Control": "public, max-age=31536000, immutable"
+      }
+    },
+    {
+      "src": "/media/(.*)",
+      "dest": "/media/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/static/favicon.ico"
+    },
+    {
+      "src": "/robots.txt",
+      "dest": "/static/robots.txt"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "pesaprime/wsgi.py"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task",
+    "DJANGO_SETTINGS_MODULE": "pesaprime.settings",
+    "DEBUG": "False",
+    "ALLOWED_HOSTS": ".vercel.app,.now.sh",
+    "CSRF_TRUSTED_ORIGINS": "https://pesaprime2026.vercel.app,https://*.now.sh"
+  }
+}
+
